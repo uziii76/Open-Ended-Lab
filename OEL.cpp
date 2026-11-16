@@ -1,43 +1,66 @@
 #include <iostream>
 #include <string>
 #include <ctime>
+#include <cstdlib>
+#include <cctype>
 
 using namespace std;
 
-string shift();
-string shiftde(string inp);
-bool validate(string);
+string shiftEncrypt(string);
+string shiftDecrypt(string inp);
+bool validateShift(string, string);
 int score(int, bool);
 void menu(int option);
 void displayInstructions();
 
 void Start();
-string move();
-string movede(string);
-bool validatemove(string);
-string vowel();
-string vowelde(string);
-bool validatevowel(string);
+string moveEncrypt(string);
+string moveDecrypt(string);
+bool validateMove(string, string);
+string vowelEncrypt(string);
+string vowelDecrypt(string);
+bool validateVowel(string, string);
 string hint(int);
-string wordGen();
+string wordGen(int);
+string getRank(int);
+int timeBonus(time_t startTime);
+string toLower(string s);
+
 int main()
 {
-    int option;
-    cout << "Crypto Game" << endl;
-    cout << "---------MENU---------" << endl;
-    cout << "1. Start" << endl;
-    cout << "2. Instructions" << endl;
-    cout << "3. Exit" << endl;
-    cin >> option;
-    while (option != 3) {
-        menu(option);
+    srand(time(0));
+    string option;
+    while (true)
+    {
+        cout << "\n       Crypto Game" << endl;
         cout << "---------MENU---------" << endl;
         cout << "1. Start" << endl;
         cout << "2. Instructions" << endl;
         cout << "3. Exit" << endl;
+        cout << "Enter your choice: ";
+
         cin >> option;
 
+        if (option == "1")
+        {
+            menu(1);
+        }
+        else if (option == "2")
+        {
+            menu(2);
+        }
+        else if (option == "3")
+        {
+            cout << "Exiting Game..." << endl;
+            break;
+        }
+        else
+        {
+            cout << "Invalid input! Please enter 1, 2, or 3." << endl;
+        }
     }
+
+
 
     return 0;
 }
@@ -55,98 +78,132 @@ void menu(int option) {
     }
 }
 void Start() {
+
     int tries = 0;
     string inp, inp1, inp2;
     int sco = 0;
-    bool b;
+    time_t start;
+
+    string original = wordGen(1);
+    string encrypted = shiftEncrypt(original);
     cout << "Welcome to the Cryptoverse" << endl;
-    cout << "CLASSIFIED FILE 001" << endl;
-    cout << "You have intercepted a suspicious message. Intelligence suggests that each letter has been shifted according to a hidden pattern." << endl;
     cout << "You only have 3 chances for all levels!" << endl;
+    if (tries < 3) {
+        cout << "CLASSIFIED FILE 001: OPERATION HARBOR" << endl;
+        cout << "Dock security has caught a radio message from a smuggling ring." << endl;
+        cout << "Each letter was nudged by a small amount that changes with its position." << endl;
+        cout << "Decode it before the ship leaves port." << endl;
+        cout << "Sample from an old intercept:  radio  ->  scgjq" << endl;
+    }
+    start = time(0);
     while (tries < 3) {
-        cout << "Encrypted Message: " << shift() << endl;
+        cout << "Encrypted Message: " << encrypted << endl;
         cout << "Try to Decrypt Message: ";
         cin >> inp;
-        b = validate(inp);
-        if (validate(inp)) {
-            cout << "WEllDONE. PROCEEDING TO NEXT." << endl;
-            sco = score(sco, b);
+        inp = toLower(inp);
+
+        if (inp == "hint") {
+            cout << hint(1) << endl;
+            sco = score(sco, false);                        // hint penalty
+        }
+        else if (validateShift(inp, original)) {
+            cout << "WELL DONE. PROCEEDING TO NEXT." << endl;
+            sco = score(sco, true);
+            sco += timeBonus(start);
             cout << "Score: " << sco << endl;
             break;
-
-        }
-        else if (inp == "hint") {
-            cout << hint(1);
         }
         else {
-            cout << "Failed , Try again." << endl;
+            cout << "Failed, try again." << endl;
             tries++;
+            sco = score(sco, false);
             cout << "You have " << 3 - tries << " tries left!" << endl;
-            if (tries < 3) {
-                cout << "TYPE hint for a clue(but will result in negative scoring)" << endl;
-                sco -= 5;
-            }
-
+            if (tries < 3)
+                cout << "TYPE hint for a clue (costs points)" << endl;
         }
-        sco = score(sco, b);
         cout << "Score: " << sco << endl;
     }
+    string original1 = wordGen(2);
+    string encrypted1 = moveEncrypt(original1);
+    if (tries < 3) {
+        cout << "CLASSIFIED FILE 002: THE DIGITAL HEIST" << endl;
+        cout << "Someone has breached our servers and left a coded trail." << endl;
+        cout << "The attacker converted every letter to its ASCII value," << endl;
+        cout << "then subtracted one fixed number from each." << endl;
+        cout << "Find the number. Recover the word." << endl;
+        cout << "Sample from an old intercept:  key  ->  +%9" << endl;
+    }
+    start = time(0);
     while (tries < 3) {
-        cout << "CLASSIFIED FILE 002" << endl;
-        cout << "An intercepted message appears to have been transformed using ASCII character values. Investigators believe that a fixed numerical value has been subtracted from each character. Identify the hidden transformation and decode the message." << endl;
-        cout << "Encrypted Message: " << move() << endl;
+        cout << "Encrypted Message: " << encrypted1 << endl;
         cout << "Try to Decrypt Message: ";
         cin >> inp1;
-        b = validatemove(inp1);
-        if (validatemove(inp1)) {
-            cout << "WEllDONE. PROCEEDING TO NEXT." << endl;
-            sco = score(sco, b);
+        inp1 = toLower(inp1);
+        if (inp1 == "hint") {
+            cout << hint(2) << endl;
+            sco = score(sco, false);                        // hint penalty
+        }
+        else if (validateMove(inp1, original1)) {
+            cout << "WELL DONE. PROCEEDING TO NEXT." << endl;
+            sco = score(sco, true);
+            sco += timeBonus(start);
             cout << "Score: " << sco << endl;
             break;
-
-        }
-        else if (inp1 == "hint") {
-            cout << hint(2);
         }
         else {
-            cout << "Failed , Try again." << endl;
+            cout << "Failed, try again." << endl;
             tries++;
-            if (tries < 3) {
-                cout << "TYPE hint for a clue(but will result in negative scoring)" << endl;
-                sco -= 5;
-            }
+            sco = score(sco, false);
+            cout << "You have " << 3 - tries << " tries left!" << endl;
+            if (tries < 3)
+                cout << "TYPE hint for a clue (costs points)" << endl;
         }
-        sco = score(sco, b);
         cout << "Score: " << sco << endl;
     }
+    string original2 = wordGen(3);
+    string encrypted2 = vowelEncrypt(original2);
+    if (tries < 3) {
+        cout << "CLASSIFIED FILE 003: THE MOLE" << endl;
+        cout << "Someone inside the agency is leaking secrets." << endl;
+        cout << "Their messages treat vowels and consonants in opposite ways." << endl;
+        cout << "Expose the pattern and name the traitor's word." << endl;
+        cout << "Sample from an old intercept:  mole  ->  lpkf" << endl;
+    }
+    start = time(0);
     while (tries < 3) {
-        cout << "CLASSIFIED FILE 003" << endl;
-        cout << "An intercepted message appears to have been altered using a special rule that treats vowels and consonants differently. Investigators must identify the hidden pattern and decode the message to recover the original text." << endl;
-        cout << "Encrypted Message: " << vowel() << endl;
+
+        cout << "Encrypted Message: " << encrypted2 << endl;
         cout << "Try to Decrypt Message: ";
         cin >> inp2;
-        b = validatevowel(inp2);
-        if (validatevowel(inp2)) {
-            cout << "WEllDONE. PROCEEDING TO NEXT." << endl;
-            sco = score(sco, b);
+        inp2 = toLower(inp2);
+        if (inp2 == "hint") {
+            cout << hint(3) << endl;
+            sco = score(sco, false);                        // hint penalty
+        }
+        else if (validateVowel(inp2, original2)) {
+            cout << "WELL DONE. PROCEEDING TO NEXT." << endl;
+            sco = score(sco, true);
+            sco += timeBonus(start);
             cout << "Score: " << sco << endl;
             break;
-
-        }
-        else if (inp2 == "hint") {
-            cout << hint(3);
         }
         else {
-            cout << "Failed , Try again." << endl;
+            cout << "Failed, try again." << endl;
             tries++;
-            if (tries < 3) {
-                cout << "TYPE hint for a clue(but will result in negative scoring)" << endl;
-                sco -= 5;
-            }
+            sco = score(sco, false);
+            cout << "You have " << 3 - tries << " tries left!" << endl;
+            if (tries < 3)
+                cout << "TYPE hint for a clue (costs points)" << endl;
         }
-        sco = score(sco, b);
         cout << "Score: " << sco << endl;
     }
+    cout << "\n========== MISSION REPORT ==========" << endl;
+    if (tries >= 3)
+        cout << "MISSION FAILED. The mole escaped and the files were lost." << endl;
+    else
+        cout << "MISSION COMPLETE. The mole is exposed and the files are safe." << endl;
+    cout << "Final Score: " << sco << endl;
+    cout << "Rank: " << getRank(sco) << endl;
 
 
 
@@ -165,11 +222,12 @@ void displayInstructions()
     cout << "\n3. Read the mission description carefully.";
     cout << "\n4. Identify the hidden encryption pattern.";
     cout << "\n5. Decode the encrypted message.";
-    cout << "\n6. You have three attempts per mission.";
+    cout << "\n6. You have three attempts in total across all missions.";
     cout << "\n7. Correct answers earn points.";
     cout << "\n8. Incorrect answers result in point deductions.";
     cout << "\n9. You can request hints, but points will be deducted.";
     cout << "\n10. Complete all missions to achieve the highest ranking.";
+    cout << "\n11. Solve a mission in under 20 seconds for a +10 speed bonus.";
 
     cout << "\n\nOBJECTIVE:";
     cout << "\nRecover all classified files by identifying hidden";
@@ -179,66 +237,56 @@ void displayInstructions()
 
     cout << "\n========================================\n";
 }
-string wordGen() {
-    srand(time(0));
-    string words[5] = { "hello", "bye", "cyaaaa", "aaaa", "teacher" };
-    string random = words[rand() % 5];
-    return random;
+string wordGen(int level) {
+    string easy[10] = { "harbor", "signal", "cargo", "falcon", "secret",
+                         "pirate", "ghost", "agent", "target", "rocket" };
+    string medium[10] = { "server", "hacker", "firewall", "backdoor", "network",
+                         "malware", "cipher", "password", "trojan", "database" };
+    string hard[10] = { "informer", "midnight", "sabotage", "conspiracy", "betrayal",
+                         "hideout", "disguise", "evidence", "witness", "suspect" };
+
+    if (level == 1) return easy[rand() % 10];
+    if (level == 2) return medium[rand() % 10];
+    return hard[rand() % 10];
 }
-string shift() {
-    string random = wordGen();
-    int shift[3] = { 1,2,3 };
+string shiftEncrypt(string random) {
+    int shiftEncrypt[3] = { 1,2,3 };
     for (int i = 0; i < random.length(); i++) {
-        random[i] = random[i] + shift[i % 3];
+        random[i] = random[i] + shiftEncrypt[i % 3];
     }
     return random;
 }
 
-string shiftde(string inp) {
+string shiftDecrypt(string inp) {
 
     int shift[3] = { 1,2,3 };
     for (int i = 0; i < inp.length(); i++) {
-        inp[i] = inp[i] + shift[i % 3]; //igomq
+        inp[i] = inp[i] - shift[i % 3]; //igomq
     }
     return inp;
 }
 
-bool validate(string inp) {
-    if (shiftde(inp) == shift()) {
-
-        return true;
-    }
-    else {
-        return false;
-    }
+bool validateShift(string inp, string original) {
+    return inp == original;
 }
-string move() {
-    string word = wordGen();
+string moveEncrypt(string word) {
     for (int i = 0; i < word.length(); i++) {
         word[i] = word[i] - 64;
     }
     return word;
 }
 
-string movede(string inp) {
-
+string moveDecrypt(string inp) {
     for (int i = 0; i < inp.length(); i++) {
-        inp[i] = inp[i] - 64; //igomq
+        inp[i] = inp[i] + 64; //igomq
     }
     return inp;
 }
 
-bool validatemove(string inp1) {
-    if (movede(inp1) == move()) {
-
-        return true;
-    }
-    else {
-        return false;
-    }
+bool validateMove(string inp, string original) {
+    return original == inp;
 }
-string vowel() {
-    string word = "hello";
+string vowelEncrypt(string word) {
     for (int i = 0; i < word.length(); i++) {
         if (word[i] == 'a' || word[i] == 'e' || word[i] == 'i' || word[i] == 'o' || word[i] == 'u') {
             word[i] = word[i] + 1;
@@ -251,27 +299,20 @@ string vowel() {
     return word;
 }
 
-string vowelde(string inp) {
-
+string vowelDecrypt(string inp) {
     for (int i = 0; i < inp.length(); i++) {
         if (inp[i] == 'a' || inp[i] == 'e' || inp[i] == 'i' || inp[i] == 'o' || inp[i] == 'u') {
-            inp[i] = inp[i] + 1;
+            inp[i] = inp[i] - 1;
         }
         else {
-            inp[i] = inp[i] - 1;
+            inp[i] = inp[i] + 1;
         }
     }
     return inp;
 }
 
-bool validatevowel(string inp1) {
-    if (movede(inp1) == move()) {
-
-        return true;
-    }
-    else {
-        return false;
-    }
+bool validateVowel(string inp, string original) {
+    return original == inp;
 }
 int score(int score, bool a) {
     if (a) {
@@ -279,23 +320,42 @@ int score(int score, bool a) {
     }
     else {
         score -= 5;
+        if (score < 0) {
+            score = 0;
+        }
     }
     return score;
 }
 string hint(int stage) {
     if (stage == 1) {
-        return "Hint: Pay attention to the ASCII values of characters.";
+        return "Hint: Compare the sample letter by letter. The shift is 1, 2, 3, then repeats.";
     }
-    else if (stage == 2)
-    {
-        return "Hint: Look at how vowels and consonants are transformed.";
+    else if (stage == 2) {
+        return "Hint: Every character moved down by the same amount in the ASCII table.";
     }
-    else if (stage == 3)
-    {
-        return "Hint: Observe how letters are rearranged in pairs.";
+    else if (stage == 3) {
+        return "Hint: In the sample, vowels moved up one letter and consonants moved down one.";
     }
     else
-    {
-        return 0;
+        return "";
+}
+string getRank(int s) {
+    if (s >= 70) return "Master Cryptanalyst";
+    if (s >= 45) return "Field Agent";
+    if (s >= 20) return "Rookie Detective";
+    else return "Trainee";
+
+}
+int timeBonus(time_t startTime) {
+    double elapsed = difftime(time(0), startTime);
+    if (elapsed < 20) {
+        cout << "SPEED BONUS! Solved in " << (int)elapsed << " seconds. +10" << endl;
+        return 10;
     }
+    return 0;
+}
+string toLower(string s) {
+    for (int i = 0; i < s.length(); i++)
+        s[i] = tolower(s[i]);
+    return s;
 }
