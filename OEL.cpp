@@ -1,21 +1,30 @@
+// Cyber Detective (Crypto Game)
+// CS110 Lab 08 - Open Ended Lab
+// A text based game where the player has to find the hidden encryption rule
+// in each mission and then use it to decode (or encode) a secret word.
+
 #include <iostream>
 #include <string>
-#include <ctime>
-#include <cstdlib>
-#include <cctype>
+#include <ctime>      // time() and difftime() for the speed bonus
+#include <cstdlib>    // rand() and srand()
+#include <cctype>     // tolower()
 
 using namespace std;
 
-const int MAX_TRIES = 3;
-const int POINTS_CORRECT = 20;
-const int POINTS_PENALTY = 5;
-const int SPEED_BONUS = 10;
-const int SPEED_LIMIT = 20;
+// ---------- Game rules ----------
+// kept as constants so we can change them in one place
+const int MAX_TRIES = 3;          // wrong answers allowed in the whole game
+const int POINTS_CORRECT = 20;    // points for a correct answer
+const int POINTS_PENALTY = 5;     // points lost for a wrong answer or a hint
+const int SPEED_BONUS = 10;       // extra points for a fast answer
+const int SPEED_LIMIT = 20;       // seconds allowed to get the speed bonus
 
+// ---------- Game modes ----------
 const int DECRYPT = 1;
 const int ENCRYPT = 2;
 const int SURVIVAL = 3;
 
+// ---------- Word lists (one list for each level) ----------
 const string EASY[10] = { "harbor", "signal", "cargo", "falcon", "secret",
                          "pirate", "ghost", "agent", "target", "rocket" };
 const string MEDIUM[10] = { "server", "hacker", "firewall", "backdoor", "network",
@@ -23,16 +32,21 @@ const string MEDIUM[10] = { "server", "hacker", "firewall", "backdoor", "network
 const string HARD[10] = { "informer", "midnight", "sabotage", "conspiracy", "betrayal",
                          "hideout", "disguise", "evidence", "witness", "suspect" };
 
+// ---------- Function prototypes ----------
+// menus
 void start();
 void displayInstructions();
 
+// main game function (used by all three modes)
 void runAct(int mode);
 
+// the three ciphers
 string shiftEncrypt(string);
 string moveEncrypt(string);
 string vowelEncrypt(string);
 string encryptWord(const string&, int);
 
+// helper functions
 int updateScore(int, bool);
 string hint(int);
 string wordGen(int);
@@ -41,9 +55,10 @@ string toLower(string s);
 
 int main()
 {
-    srand(time(0));
+    srand(time(0));    // so the random words are different every time
     string option;
 
+    // main menu keeps coming back until the player chooses Exit
     while (true)
     {
         cout << "\n===========================================\n";
@@ -56,7 +71,7 @@ int main()
         cout << "-------------------------------------------\n";
         cout << "Enter your choice: ";
 
-        cin >> option;
+        cin >> option;    // read as a string so a wrong key doesn't break cin
 
         if (option == "1")
         {
@@ -78,9 +93,11 @@ int main()
     }
     return 0;
 }
+
+// Menu to choose which act (mode) to play
 void start() {
     string choice;
-        
+
     while(true){
         cout << "\n\n-------------- Choose an Act --------------\n";
         cout << "1. Decryption\n";
@@ -91,6 +108,7 @@ void start() {
         cout << "Enter your choice: ";
         cin >> choice;
 
+        // all three modes use the same function, only the mode number changes
         if (choice == "1")
         {runAct(DECRYPT);}
         else if (choice == "2")
@@ -98,11 +116,13 @@ void start() {
         else if (choice == "3")
         {runAct(SURVIVAL);}
         else if (choice == "4")
-        {return;}
-        else 
+        {return;}    // just goes back to the main menu loop
+        else
         {cout << "Invalid Input!\n";}
     }
 }
+
+// Shows the rules of the game
 void displayInstructions()
 {
     cout << "\n===========================================\n";
@@ -128,14 +148,18 @@ void displayInstructions()
     cout << "\n\nRemember: Observe, Investigate, and Crack the Code!\n";
     cout << "===========================================\n";
 }
+
+// This is the main part of the game.
+// mode = DECRYPT, ENCRYPT or SURVIVAL
 void runAct(int mode)
 {
-    int tries = 0;
+    int tries = 0;           // wrong answers so far
     int score = 0;
-    int level = 1;
-    int solved = 0;
-    int taskMode = mode;
-    
+    int level = 1;           // which file/mission we are on (1 to 3)
+    int solved = 0;          // missions solved (used in survival mode)
+    int taskMode = mode;     // decode or encode for the current mission
+
+    // welcome message
     if (mode == SURVIVAL)
     {
         cout << "\n===========================================\n";
@@ -149,10 +173,14 @@ void runAct(int mode)
         cout << "You only have " << MAX_TRIES << " chances for all levels!\n";
     }
 
+    // each time through this loop is one mission
+    // stops when tries run out, or after level 3 in the normal modes
     while (tries < MAX_TRIES && (mode == SURVIVAL || level <= 3))
     {
+        // ----- show the mission intro -----
         if (mode == SURVIVAL)
         {
+            // survival picks a random level and a random direction each round
             level = 1 + rand() % 3;
             taskMode = 1 + rand() % 2;
 
@@ -169,6 +197,7 @@ void runAct(int mode)
         }
         else
         {
+            // story for each file, with a sample so the player can find the rule
             if (level == 1)
             {
                 cout << "\n===========================================\n";
@@ -209,15 +238,18 @@ void runAct(int mode)
             cout << "Type 'hint' for a clue (costs " << POINTS_PENALTY << " points).\n\n";
         }
 
-        string original = wordGen(level);
-        string encrypted = encryptWord(original, level);
+        // ----- set up the word for this mission -----
+        string original = wordGen(level);               // random word for this level
+        string encrypted = encryptWord(original, level);   // its encrypted form
         bool isSolved = false;
-        time_t startTime = time(0);
+        time_t startTime = time(0);    // start the timer for the speed bonus
 
+        // keep asking until the mission is solved or the tries are finished
         while (tries < MAX_TRIES && !isSolved)
         {
             string inp;
 
+            // decryption shows the encrypted word, encryption shows the original
             if (taskMode == DECRYPT)
             {
                 cout << "Encrypted message: " << encrypted << "\n";
@@ -228,21 +260,24 @@ void runAct(int mode)
                 cout << "Original word: " << original << "\n";
                 cout << "Your answer (encrypted form): ";
             }
-            
+
             cin >> inp;
-            inp = toLower(inp);
+            inp = toLower(inp);    // so capital letters also work
 
             if (inp == "hint")
             {
                 cout << hint(level) << "\n";
-                score = updateScore(score, false);
+                score = updateScore(score, false);    // hint costs points
             }
             else
             {
                 bool correct;
                 if (taskMode == DECRYPT)
                 {
-                    correct = (encryptWord(inp, level) == encrypted); 
+                    // we encrypt the player's answer and compare it with the message
+                    // (the vowel cipher can give the same result for different words,
+                    // so decrypting and comparing would not always work)
+                    correct = (encryptWord(inp, level) == encrypted);
                 }
                 else
                 {
@@ -252,8 +287,9 @@ void runAct(int mode)
                 if (correct)
                 {
                     score = updateScore(score, true);
-                    int elapsed = (int)difftime(time(0), startTime);
+                    int elapsed = (int)difftime(time(0), startTime);    // seconds taken
 
+                    // speed bonus if solved quickly
                     if (elapsed < SPEED_LIMIT)
                     {
                         cout << "SPEED BONUS! Solved in " << elapsed << " seconds. +" << SPEED_BONUS << "\n";
@@ -263,6 +299,7 @@ void runAct(int mode)
                 }
                 else
                 {
+                    // wrong answer: lose a try and some points
                     cout << "Failed, try again.\n";
                     tries++;
                     score = updateScore(score, false);
@@ -273,8 +310,10 @@ void runAct(int mode)
                 }
             }
 
+            // status line after every answer
             cout << "[ Tries Left : " << MAX_TRIES - tries << "/" << MAX_TRIES << " | Score: " << score << "]\n\n";
 
+            // move on to the next file once this one is solved
             if (isSolved)
             {
                 solved++;
@@ -289,6 +328,8 @@ void runAct(int mode)
             }
         }
     }
+
+    // ----- final result -----
     if (mode == SURVIVAL)
     {
         cout << "\n============== SURVIVAL OVER ==============\n";
@@ -301,6 +342,7 @@ void runAct(int mode)
         cout << "\n============= MISSION REPORT ==============\n";
         if (tries >= MAX_TRIES)
         {
+            // the message depends on which file the player failed at
             if (level == 1)
                 cout << "MISSION FAILED. The smugglers sailed away with the cargo.\n";
             else if (level == 2)
@@ -316,39 +358,49 @@ void runAct(int mode)
         cout << "Rank: " << getRank(score) << "\n";
     }
 }
+
+// Gives a random word from the list of the given level
 string wordGen(int level) {
     if (level == 1) return EASY[rand() % 10];
     if (level == 2) return MEDIUM[rand() % 10];
     return HARD[rand() % 10];
 }
+
+// Cipher 1: shifts the letters by 1, 2, 3 and then repeats (radio -> scgjq)
 string shiftEncrypt(string word) {
     for (int i = 0; i < word.length(); i++) {
-        int shift = 1 + (i % 3);
-        word[i] = 'a' + (word[i] - 'a' + shift) % 26;
+        int shift = 1 + (i % 3);    // gives 1, 2, 3, 1, 2, 3 ...
+        word[i] = 'a' + (word[i] - 'a' + shift) % 26;    // % 26 wraps around after z
     }
     return word;
 }
+
+// Cipher 2: subtracts 64 from the ASCII value of every character (key -> +%9)
 string moveEncrypt(string word) {
     for (int i = 0; i < word.length(); i++) {
         word[i] = word[i] - 64;
     }
     return word;
 }
+
+// Cipher 3: vowels go 1 letter forward, other letters go 1 letter back (mole -> lpkf)
 string vowelEncrypt(string word) {
-    for (int i = 0; i < word.length(); i++) 
+    for (int i = 0; i < word.length(); i++)
     {
         char c = word[i];
-        if (c == 'a' || c == 'e' || c == 'i' || c == 'o' || c == 'u') 
+        if (c == 'a' || c == 'e' || c == 'i' || c == 'o' || c == 'u')
         {
             word[i] = c + 1;
         }
-        else 
+        else
         {
             word[i] = c - 1;
         }
     }
     return word;
 }
+
+// Picks the cipher that belongs to the level
 string encryptWord(const string& word, int level)
 {
     if (level == 1)
@@ -358,20 +410,25 @@ string encryptWord(const string& word, int level)
     else
         return vowelEncrypt(word);
 }
+
+// Adds points for a correct answer, takes points away for a wrong one
 int updateScore(int current, bool correct) {
-    if (correct) 
+    if (correct)
     {
         return current + POINTS_CORRECT;
     }
 
     current -= POINTS_PENALTY;
 
+    // score should not go below 0
     if (current < 0)
     {
         current = 0;
     }
     return current;
 }
+
+// Gives a clue for the cipher of the current level
 string hint(int level) {
     if (level == 1) {
         return "Hint: Compare the sample letter by letter. The shift is 1, 2, 3, then repeats.";
@@ -384,6 +441,8 @@ string hint(int level) {
         return "Hint: In the sample, vowels moved up one letter and consonants moved down one.";
     }
 }
+
+// Gives the rank for a score
 string getRank(int s) {
     if (s >= 70) return "Master Cryptanalyst";
     if (s >= 45) return "Field Agent";
@@ -391,6 +450,8 @@ string getRank(int s) {
     else return "Trainee";
 
 }
+
+// Changes a string to lowercase (so "HARBOR" and "harbor" are the same)
 string toLower(string s) {
     for (int i = 0; i < s.length(); i++)
         s[i] = tolower((unsigned char)s[i]);
