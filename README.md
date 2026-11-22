@@ -77,6 +77,6 @@ In Decryption and Encryption you play through **three classified files in order*
 
 | Name | Contribution |
 |---|---|
-| **Muhammad Mustafa Asim** |  **Code and README.md** |
+| **Muhammad Mustafa Asim** |  **Code, README.md and Report** |
 | **Uzair Hassan Farooq** | **Code and Repository Creation** |
-| **Muhammad Daud** | **Report** |
+| **Muhammad Daud** | **Report (Documentation)** |
