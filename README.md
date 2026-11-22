@@ -73,10 +73,10 @@ In Decryption and Encryption you play through **three classified files in order*
 - Stuck? Type `hint`. It costs fewer points than losing a try.
 - Answer quickly for the speed bonus.
 
-## Authors
+## Group Members and Contribution
 
-| Name | Registration No. |
+| Name | Contribution |
 |---|---|
-| **Muhammad Mustafa Asim** | **588839** |
-| **Uzair Hassan Farooq** | **594915** |
-| **Muhammad Daud** | **597972** |
+| **Muhammad Mustafa Asim** |  **Code and README.md** |
+| **Uzair Hassan Farooq** | **Code** |
+| **Muhammad Daud** | **Report** |
